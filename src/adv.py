@@ -1,5 +1,7 @@
 from room import Room
 from player import Player
+from item import Item
+
 import textwrap
 
 # Declare all the rooms
@@ -35,6 +37,12 @@ room['narrow'].w_to = room['foyer']
 room['narrow'].n_to = room['treasure']
 room['treasure'].s_to = room['narrow']
 
+torch = Item("torch", "flames on a stick")
+
+room['foyer'].items.append(torch)
+
+rock = Item("rock", "it's gray")
+
 #
 # Main
 #
@@ -49,6 +57,7 @@ intro_message()
 character = input("Hello human. What is your name? ")
 location = room['outside']
 player1 = Player(character, location)
+player1.inventory.append(rock)
 
 # Write a loop that:
 #-
@@ -95,5 +104,36 @@ while True:
             print("You are now heading west... \n")
         else: 
             print(f"{character}, you can't be here. Go Back! \n")
+
+    if choice == 'i': 
+        if len(current_room.items) == 0:
+            print("No items found!")
+        elif len(current_room.items):
+            # looping through current_room's items
+            for i in current_room.items: 
+                print(i.name, i.description)
+    if choice == 'b':
+        if len(player1.inventory) == 0:
+            print("There's nothing in here")
+        elif len(player1.inventory):
+            for i in player1.inventory:
+                print(i.name, i.description)    
+    if choice[0:4] == 'take':
+        words = choice.split()
+        for i in current_room.items:
+            if words[1] == i.name:
+                player1.take_item(i)
+                current_room.empty_room(i)
+        print(words)
+    elif choice[0:4] == 'drop':
+        words = choice.split()
+        for i in player1.inventory:
+            if words[1] == i.name:
+                player1.drop_item(i)
+                current_room.full_room(i)
+
+        print(words)
+    print("\n")
+                
 
 # hasattr(): (object, name) <-- looks thru object to find specified name. RETURNS True or false
