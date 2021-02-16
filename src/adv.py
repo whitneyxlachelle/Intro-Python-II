@@ -1,4 +1,8 @@
 from room import Room
+from player import Player
+from item import Item
+
+import textwrap
 
 # Declare all the rooms
 
@@ -14,7 +18,7 @@ into the darkness. Ahead to the north, a light flickers in
 the distance, but there is no way across the chasm."""),
 
     'narrow':   Room("Narrow Passage", """The narrow passage bends here from west
-to north. The smell of gold permeates the air."""),
+to north."""),
 
     'treasure': Room("Treasure Chamber", """You've found the long-lost treasure
 chamber! Sadly, it has already been completely emptied by
@@ -33,19 +37,103 @@ room['narrow'].w_to = room['foyer']
 room['narrow'].n_to = room['treasure']
 room['treasure'].s_to = room['narrow']
 
+torch = Item("torch", "flames on a stick")
+
+room['foyer'].items.append(torch)
+
+rock = Item("rock", "it's gray")
+
 #
 # Main
 #
 
+# Intro Message
+def intro_message():
+    print("Find Charles!")
+
+intro_message()
+
 # Make a new player object that is currently in the 'outside' room.
+character = input("Hello human. What is your name? ")
+location = room['outside']
+player1 = Player(character, location)
+player1.inventory.append(rock)
 
 # Write a loop that:
-#
+#-
+while True:
+
 # * Prints the current room name
 # * Prints the current description (the textwrap module might be useful here).
+    current_room = player1.current_room
+    print(f"{player1.current_room.description}. You're currently in {player1.current_room.name}. \n")
+
 # * Waits for user input and decides what to do.
-#
 # If the user enters a cardinal direction, attempt to move to the room there.
-# Print an error message if the movement isn't allowed.
-#
+    choice = input("You can move [n, e, s, w] or press [q] to quit. Which way would you like to go? \n")
+
 # If the user enters "q", quit the game.
+    if choice == 'q':
+        print("Bye, for now " + character)
+        break
+# Player is outside
+    if choice == 'n':
+        if hasattr(current_room, 'n_to'):
+            player1.current_room = current_room.n_to
+            print("You are now heading north... \n")
+ 
+# Print an error message if the movement isn't allowed.           
+        else: 
+            print(f"{character}, you can't be here. Go Back! \n")
+    
+    elif choice == 'e':
+        if hasattr(current_room, 'e_to'):
+            player1.current_room = current_room.e_to
+            print("You are now heading east... \n")
+        else: 
+            print(f"{character}, you can't be here. Go Back! \n")
+    elif choice == 's':
+        if hasattr(current_room, 's_to'):
+            player1.current_room = current_room.s_to
+            print("You are now heading south... \n")
+        else: 
+            print(f"{character}, you can't be here. Go Back! \n")
+    elif choice == 'w':
+        if hasattr(current_room, 'w_to'):
+            player1.current_room = current_room.w_to
+            print("You are now heading west... \n")
+        else: 
+            print(f"{character}, you can't be here. Go Back! \n")
+
+    if choice == 'i': 
+        if len(current_room.items) == 0:
+            print("No items found!")
+        elif len(current_room.items):
+            # looping through current_room's items
+            for i in current_room.items: 
+                print(i.name, i.description)
+    if choice == 'b':
+        if len(player1.inventory) == 0:
+            print("There's nothing in here")
+        elif len(player1.inventory):
+            for i in player1.inventory:
+                print(i.name, i.description)    
+    if choice[0:4] == 'take':
+        words = choice.split()
+        for i in current_room.items:
+            if words[1] == i.name:
+                player1.take_item(i)
+                current_room.empty_room(i)
+        print(words)
+    elif choice[0:4] == 'drop':
+        words = choice.split()
+        for i in player1.inventory:
+            if words[1] == i.name:
+                player1.drop_item(i)
+                current_room.full_room(i)
+
+        print(words)
+    print("\n")
+                
+
+# hasattr(): (object, name) <-- looks thru object to find specified name. RETURNS True or false
